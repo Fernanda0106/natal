@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calendário do Advento</title>
+<style>
+:root{--bg:#0b1a14;--green1:#1f5c3f;--green2:#2b7a53;--green3:#154530;--red:#b3262e;--cream:#efe8d6;--ink:#17301f;--gold1:#f6d27a;--gold2:#c9902f;--text:#f4efe2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b1a14}}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#14382a,var(--bg) 70%);color:var(--text);font-family:Georgia,"Times New Roman",serif;min-height:100vh;padding:24px 14px 40px}
+header{text-align:center;max-width:720px;margin:0 auto 22px}
+h1{font-size:clamp(2.4rem,9vw,4.2rem);margin:0;letter-spacing:-1px}
+.sub{opacity:.8;margin:6px 0 2px}
+.from{color:var(--gold1);font-style:italic}
+.wrap{max-width:720px;margin:0 auto;container-type:inline-size}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:calc((100cqw - 30px)/4);gap:10px;grid-auto-flow:dense}
+.day.big{grid-column:span 2;grid-row:span 2;font-size:clamp(2.4rem,11vw,3.6rem)}
+.day.wide{grid-column:span 2}
+.day.tall{grid-row:span 2}
+.day{position:relative;border:0;border-radius:16px;font:700 clamp(1.4rem,6vw,2rem) Georgia,serif;cursor:pointer;color:var(--text);transition:transform .2s,box-shadow .2s,filter .2s;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.day:hover{transform:translateY(-3px) rotate(-1deg)}
+.day:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.day.g1{background:var(--green1)}.day.g2{background:var(--green2)}.day.g3{background:var(--green3)}
+.day.r{background:var(--red)}
+.day.c{background:var(--cream);color:var(--ink)}
+.day.locked::after{content:"🔒";position:absolute;right:8px;bottom:6px;font-size:.9rem;opacity:.75}
+.day.opened{filter:saturate(.55) brightness(.85)}
+.day.opened::after{content:"✓";position:absolute;right:9px;bottom:5px;font-size:1rem}
+.day.gold{grid-column:span 2;grid-row:span 2;background:linear-gradient(135deg,var(--gold1),var(--gold2));color:#4a2f00;font-size:clamp(2rem,9vw,3rem);box-shadow:0 4px 0 #8a5d12,0 0 28px rgba(246,210,122,.35)}
+.day.gold small{display:block;font-size:.7rem;letter-spacing:2px;text-transform:uppercase}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--cream);color:var(--ink);padding:12px 18px;border-radius:30px;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}
+.modal.show{display:flex}
+.voucher{background:var(--cream);color:var(--ink);border-radius:20px;padding:26px 22px;max-width:380px;width:100%;text-align:center;border:3px dashed var(--red);animation:pop .35s}
+.voucher.goldv{background:linear-gradient(135deg,#fff3cf,var(--gold1));border-color:var(--gold2)}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.voucher .tag{color:var(--red);letter-spacing:3px;font-size:.75rem;text-transform:uppercase}
+.voucher .emoji{font-size:3rem;margin:6px 0}
+.voucher h2{margin:4px 0 8px}
+.btn{margin-top:16px;border:0;border-radius:30px;padding:12px 28px;font:700 1rem Georgia,serif;color:#fff;background:linear-gradient(180deg,#d23a42,var(--red));box-shadow:0 4px 0 #7d171d;cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7d171d}
+.count{display:inline-flex;gap:10px;margin-top:14px;padding:10px 16px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(246,210,122,.4)}
+.count div{min-width:48px}.count b{display:block;font-size:1.5rem;color:var(--gold1)}.count span{font-size:.65rem;letter-spacing:1px;text-transform:uppercase;opacity:.75}
+.count-t{margin:16px 0 0;font-size:.85rem;opacity:.8}
+.voucher .msg{font-style:italic;color:var(--red);margin:14px 0 0;font-size:.95rem}
+.voucher.goldv .msg{color:#7a4d00}
+.test{display:block;margin:26px auto 0;background:none;border:1px solid rgba(255,255,255,.25);color:var(--text);border-radius:20px;padding:6px 14px;font-size:.8rem;cursor:pointer;opacity:.6}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="nome">Wellyngton</h1>
+  <p class="sub">Que você nunca se esqueça do quanto é amado.</p>
+  <p class="from">Com carinho, Nanda</p>
+  <p class="count-t" id="countT">Faltam para o Natal</p>
+  <div class="count" id="count"></div>
+</header>
+<div class="wrap"><main class="grid" id="grid"></main></div>
+<button class="test" id="test" hidden>modo teste: desligado</button>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal"><div class="voucher" id="voucher"></div></div>
+
+<script>
+// ✏️ EDITE AQUI: um vale para cada dia (1 a 25)
+const VALES = {
+ 1:["🧁","Vale doce","Um doce feito por mim da sua escolha."],
+ 2:["💆","Vale massagem","Uma massagem de sua escolha por 20 minutos."],
+ 3:["🦸","Vale cinema","Você me leva para assistir Vingadores Doomsday."],
+ 4:["🍕","Vale pizza","Fazer pizza caseira juntinhos."],
+ 5:["🥞","Vale café da manhã","Café da manhã na cama."],
+ 6:["🧺","Vale piquenique","Um piquenique só nosso."],
+ 7:["🎮","Vale noite de jogos","Uma noite inteira de jogos que você queira."],
+ 8:["🍦","Vale sorvete","Sorvete a dois."],
+ 9:["💌","Vale carta","Uma cartinha escrita à mão."],
+ 10:["🍝","Vale jantar","Eu cozinho o jantar que você queira."],
+ 11:["🌅","Vale pôr do sol","Ver o pôr do sol juntos."],
+ 12:["🧖","Vale dia de spa","Dia de cuidado em casa."],
+ 13:["📺","Vale maratona","Maratonar uma série de sua escolha."],
+ 14:["🕯️","Vale noite romântica","Uma noite só nos dois com direito à: jantar,sobremesa,filme, músicas e uma dança."],
+ 15:["🎧","Vale playlist","Uma playlist feita só pra você."],
+ 16:["🎄","Vale passeio","Ver as decorações de natal."],
+ 17:["💕","Vale noite romântica","Reviver nosso primeiro encontro"],
+ 18:["🤗","Vale abraço","Abraço apertado, sem hora pra acabar."],
+ 19:["🎡","Vale diversão","Um passeio num lugar divertido."],
+ 20:["🛏️","Vale noite do pijama em casa","Festa do pijama só nos dois."],
+ 21:["🍔","Vale lanche","Fazer um lanche especial."],
+ 22:["🖼️","Vale mural","Montar um mural nosso com fotos e itens especiais."],
+ 23:["🤫","Vale surpresa","Uma surpresinha escondida."],
+ 24:["🧞","Vale desejo","Um pedido, qualquer um."],
+ 25:["🎁","O GRANDE PRESENTE","Espero que daqui uns anos o natal seja na nossa casinha!"]
+};
+
+// ✏️ EDITE AQUI: uma mensagem carinhosa para cada dia (aparece junto do vale)
+const MSGS=[
+ "Começando dezembro do jeito que eu mais gosto: pensando em você.",
+ "Você deixa meus dias mais leves.",
+ "Obrigada por ser meu lugar favorito.",
+ "Cada dia ao seu lado vira uma boa lembrança.",
+ "Seu sorriso é meu presente de todo dia.",
+ "Eu escolheria você em todos os natais.",
+ "Você é a melhor parte do meu ano.",
+ "Tenho muito orgulho de você.",
+ "Sua risada é o meu som favorito.",
+ "Com você, até o dia comum fica especial.",
+ "Obrigado por cuidar de mim do seu jeito.",
+ "Você me faz querer ser melhor.",
+ "Mal posso esperar pelas nossas próximas aventuras.",
+ "Seu abraço é o meu lar.",
+ "Eu amo cada pedacinho de você.",
+ "Você é a minha pessoa favorita no mundo.",
+ "Obrigado por tanta paciência e tanto carinho.",
+ "Nosso amor é a minha maior alegria.",
+ "Você ilumina tudo, igual às luzes de Natal.",
+ "Falta pouco, mas meu amor por você já é enorme.",
+ "Ainda bem que a gente se encontrou.",
+ "Você merece todo o carinho do mundo.",
+ "Amanhã é véspera, mas hoje é dia de lembrar o quanto você é amado.",
+ "Amanhã é o grande dia, e o melhor presente é ter você.",
+ "Feliz Natal, meu amor! Que a gente tenha muitos outros juntos."
+];
+const ORDER=[7,15,1,22,10,4,9,20,13,18,2,16,11,23,5,12,3,19,8,14,6,17,21,24,25];
+// ✏️ Tamanho de cada dia: big (grande), wide (largo), tall (alto). Os outros ficam pequenos.
+const TAM={1:"big",9:"wide",22:"wide",11:"wide",13:"tall",4:"tall"};
+const CORES=["g1","g2","g3","r","c","g1","g3","c","g2"];
+const grid=document.getElementById("grid"),toast=document.getElementById("toast"),
+modal=document.getElementById("modal"),vch=document.getElementById("voucher"),
+testBtn=document.getElementById("test");
+let testMode=location.hash==="#teste",opened={};
+try{opened=JSON.parse(localStorage.getItem("advento")||"{}")}catch(e){}
+function save(){try{localStorage.setItem("advento",JSON.stringify(opened))}catch(e){}}
+function isUnlocked(d){
+  if(testMode)return true;
+  const n=new Date(),y=n.getFullYear();
+  return n>=new Date(y,11,d);
+}
+function msg(t){toast.textContent=t;toast.classList.add("show");clearTimeout(msg.t);msg.t=setTimeout(()=>toast.classList.remove("show"),2600)}
+function render(){
+  grid.innerHTML="";
+  ORDER.forEach((d,i)=>{
+    const b=document.createElement("button");
+    b.className="day "+(d===25?"gold":CORES[i%CORES.length]+" "+(TAM[d]||""));
+    b.innerHTML=d===25?"<small>O grande dia</small>25":d;
+    if(!isUnlocked(d))b.classList.add("locked");
+    if(opened[d])b.classList.add("opened");
+    b.setAttribute("aria-label","Dia "+d);
+    b.onclick=()=>abrir(d,b);
+    grid.appendChild(b);
+  });
+}
+function abrir(d,b){
+  if(!isUnlocked(d)){
+    b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");
+    msg("Calma, gatinho! Esse só abre no dia "+d+" de dezembro.");return;
+  }
+  const [e,t,txt]=VALES[d];
+  vch.className="voucher"+(d===25?" goldv":"");
+  vch.innerHTML='<div class="tag">Vale presente · Dia '+d+'</div><div class="emoji">'+e+'</div><h2>'+t+'</h2><p>'+txt+'</p><p class="msg">“'+MSGS[d-1]+'”</p><button class="btn" id="fechar">Eba! 💚</button>';
+  modal.classList.add("show");
+  opened[d]=true;save();
+  document.getElementById("fechar").onclick=()=>{modal.classList.remove("show");render()};
+}
+modal.onclick=e=>{if(e.target===modal){modal.classList.remove("show");render()}};
+// Modo teste (só pra você conferir): adicione #teste no final do link
+if(testMode){testBtn.hidden=false;testBtn.textContent="modo teste: ligado";}
+render();
+// Contagem regressiva até o Natal
+function tick(){
+  const el=document.getElementById("count"),t=document.getElementById("countT");
+  const n=new Date(),alvo=new Date(n.getFullYear(),11,25);
+  const diff=alvo-n;
+  if(diff<=0){t.textContent="";el.innerHTML="<div><b>🎄</b><span>Feliz Natal!</span></div>";return}
+  const d=Math.floor(diff/864e5),h=Math.floor(diff/36e5)%24,m=Math.floor(diff/6e4)%60,s=Math.floor(diff/1e3)%60;
+  el.innerHTML=[[d,"dias"],[h,"horas"],[m,"min"],[s,"seg"]].map(x=>"<div><b>"+String(x[0]).padStart(2,"0")+"</b><span>"+x[1]+"</span></div>").join("");
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
